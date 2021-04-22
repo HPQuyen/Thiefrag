@@ -1,0 +1,16 @@
+{
+  "name": "nodejs-console-app",
+  "version": "0.0.0",
+  "description": "NodejsConsoleApp",
+  "main": "app.js",
+  "author": {
+    "name": ""
+  },
+  "dependencies": {
+    "express": "^4.17.1",
+    "express-handlebars": "^5.3.0",
+    "express-session": "^1.17.1",
+    "ip": "^1.1.5",
+    "morgan": "^1.10.0"
+  }
+}
