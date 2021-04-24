@@ -1,0 +1,165 @@
+{{#section 'css'}}
+<style>
+    /* Banner */
+    #banner {
+        background: #132c33;
+        background: -webkit-linear-gradient(to bottom, #132c33, #126e82, #51c4d3);
+        background: linear-gradient(to bottom, #132c33, #126e82, #51c4d3);
+    }
+</style>
+{{/section}}
+
+{{#section 'js'}}
+<script>
+    // My web app's Firebase configuration
+    var firebaseConfig = {
+        apiKey: "AIzaSyAextH1u5uq3LlcZ-5SoMdhuPuwx1jcl6E",
+        authDomain: "thiefrag-65129.firebaseapp.com",
+        databaseURL: "https://thiefrag-65129-default-rtdb.firebaseio.com",
+        projectId: "thiefrag-65129",
+        storageBucket: "thiefrag-65129.appspot.com",
+        messagingSenderId: "72980298760",
+        appId: "1:72980298760:web:37ddd00445e53b487925bd"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+
+    // Get a reference to the database service
+    const logItemTemplate = jQuery("#logItem");
+    const tag = {
+        high: "badge badge-danger px-3 py-1 rounded-pill font-weight-bold text-white ",
+        moderate: "badge badge-warning px-3 py-1 rounded-pill font-weight-bold text-white",
+        low: "badge badge-success px-3 py-1 rounded-pill font-weight-bold text-white",
+    }
+    const tagTitle = {
+        high: "Cao",
+        moderate: "Trung bình",
+        low: "Thấp",
+    }
+
+    jQuery(document).ready(function () {
+        const dbRef = firebase.database().ref();
+
+        dbRef.child("logs").get().then((snapshot) => {
+            if (snapshot.exists()) {
+                for (var key in snapshot.val()) {
+                    InitializeLog(snapshot.val()[key], key);
+                }
+            } else {
+                console.log("No data available");
+            }
+        }).catch((error) => {
+            console.error(error);
+        });
+
+    });
+
+    /* *************************** Modal code *************************** */
+    // Get the modal
+    var modal = jQuery(".imageModal");
+    var modalImg = jQuery(".modalContent");
+    var captionText = jQuery(".modalCaption");
+
+    function InitializeLog(log, snapTimestamp) {
+        const currentTimestamp = Math.round(new Date().getTime() / 1000);
+
+        var item = logItemTemplate.clone().appendTo("#logContainer");
+        jQuery(item).find("img").attr("src", log.snapshotUrl);
+        jQuery(item).find("#itemDate").html(log.datetime);
+
+        var imageItem = jQuery(item).find("#itemImage");
+        imageItem.click(function () {
+            modal[0].style.display = "block";
+
+            modalImg[0].src = this.src;
+            captionText[0].innerHTML = log.datetime;
+        });
+
+        if (currentTimestamp - snapTimestamp <= 86400) {
+            jQuery(item).find("#emergencyTag").addClass(tag.high);
+            jQuery(item).find("#emergencyTag").html(tagTitle.high);
+        } else if (currentTimestamp - snapTimestamp <= 86400 * 2) {
+            jQuery(item).find("#emergencyTag").addClass(tag.moderate);
+            jQuery(item).find("#emergencyTag").html(tagTitle.moderate);
+        } else {
+            jQuery(item).find("#emergencyTag").addClass(tag.low);
+            jQuery(item).find("#emergencyTag").html(tagTitle.low);
+        }
+        item.show();
+    }
+
+    // Get the <span> element that closes the modal
+    jQuery(".modalCloseButton").click(function () {
+        modal[0].style.display = "none";
+    });
+</script>
+<!-- TODO: Add SDKs for Firebase products that you want to use
+         https://firebase.google.com/docs/web/setup#available-libraries -->
+{{/section}}
+
+<div class="container-fluid" id="homePage">
+    <div class="mx-4">
+
+        <!--Banner -->
+        <div class="row my-4">
+            <div class="col-12 mx-auto">
+
+                <div class="text-light p-5 shadow rounded-lg" id="banner">
+                    <p class="h1 display-4 text-uppercase font-weight-bold">ESP8266</p>
+                    <p class="lead">Nhật ký hoạt động</p>
+                </div>
+
+            </div>
+        </div>
+        <!-- End -->
+
+        <!-- Image information go here -->
+        <div class="row row-cols-1 row-cols-sm-1 row-cols-md-2 row-cols-lg-2 row-cols-xl-4" id="logContainer">
+
+        </div>
+
+    </div>
+</div>
+
+<!-- Log item template -->
+<div class="col mb-4" id="logItem">
+    <div class="card h-100 rounded shadow-sm">
+
+        <img src="" class="card-img-top img-thumbnail" id="itemImage" alt="">
+
+        <div class="card-body">
+            <p class="h5 card-text" id="itemDate">
+                Datetime
+            </p>
+            <div class="container-fluid rounded-lg py-2" id="emergencyContainer">
+                <div class="row justify-content-between">
+
+                    <div id="emergencyTitle">
+                        Độ cảnh báo
+                    </div>
+                    <div id="emergencyTag">
+                        Emergency tag
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<!-- End -->
+
+<!-- Log modal template -->
+<div class="imageModal">
+
+    <!-- The Close Button -->
+    <span class="modalCloseButton">&times;</span>
+
+    <!-- Modal Content (The Image) -->
+    <img class="modalContent">
+
+    <!-- Modal Caption (Image Text) -->
+    <div class="modalCaption"></div>
+</div>
+<!-- End -->

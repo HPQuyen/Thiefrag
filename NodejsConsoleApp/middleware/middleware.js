@@ -1,5 +1,3 @@
-
-
 module.exports = {
     CheckAuthorized(req, res, next) {
         console.log("middleware check auth call");
