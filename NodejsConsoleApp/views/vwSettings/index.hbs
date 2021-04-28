@@ -104,7 +104,50 @@
 {{/section}}
 
 {{#section 'js'}}
-
+<script src="//cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+<script>
+    const inputIODevice = jQuery("#switchIODevice");
+    const inputIOAutomatic = jQuery("#switchIOAutomatic");
+    jQuery(document).ready(function () {
+        inputIODevice.prop('checked', inputIODevice.val() === "true");
+        inputIOAutomatic.prop('checked', inputIOAutomatic.val() === "true");
+        IODeviceChange();
+    });
+    function OnClickSave() {
+        event.preventDefault();
+        const IODevice = inputIODevice.is(":checked");
+        const IOAutomatic = inputIOAutomatic.is(":checked");
+        $.post("/settings", {
+            IODevice: IODevice === true ? "on" : "off",
+            IOAutomatic: IOAutomatic === true ? "on" : "off"
+        }, function (err, data) {
+                if (err) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: err
+                    })
+                } else {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Save successfully',
+                        showConfirmButton: false,
+                        timer: 1500
+                    })
+                }
+        });
+    }
+    function IODeviceChange() {
+        const IODevice = inputIODevice.is(":checked");
+        if (IODevice) {
+            inputIOAutomatic.removeAttr("disabled");
+            jQuery("#sliderIOAutomatic").css("background-color", "");
+        } else {
+            jQuery("#sliderIOAutomatic").css("background-color", "grey");
+            inputIOAutomatic.attr("disabled", true);
+        }
+    }
+</script>
 {{/section}}
 
 <div class="container-fluid justify-content-center" id="settingsPage">
@@ -122,7 +165,7 @@
                         Bật/Tắt thiết bị
                     </p>
                     <label class="switch">
-                        <input type="checkbox" value="false" id="switchIODevice">
+                        <input type="checkbox" value="{{IODevice}}" id="switchIODevice" onchange="IODeviceChange()">
                         <span class="slider round"></span>
                     </label>
                 </div>
@@ -132,16 +175,16 @@
                         Bật/Tắt chế độ tự động
                     </p>
                     <label class="switch">
-                        <input type="checkbox" value="true" id="switchIOAutomatic">
-                        <span class="slider round"></span>
+                        <input type="checkbox" value="{{IOAutomatic}}" id="switchIOAutomatic">
+                        <span class="slider round" id="sliderIOAutomatic"></span>
                     </label>
                 </div>
 
                 <div class="form-group">
-                    <input type="text" id="disabledEmailInput" class="form-control" placeholder="User's email" disabled>
+                    <input type="text" id="disabledEmailInput" class="form-control" placeholder="phuquyen1504@gmail.com" disabled>
                 </div>
 
-                <button class="btn btn-lg btn-primary btn-block text-uppercase" onclick="">
+                <button class="btn btn-lg btn-primary btn-block text-uppercase" onclick="OnClickSave()">
                     Lưu
                 </button>
 
