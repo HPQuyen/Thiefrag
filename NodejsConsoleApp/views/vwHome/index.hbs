@@ -10,6 +10,7 @@
 {{/section}}
 
 {{#section 'js'}}
+<script src="//cdn.jsdelivr.net/npm/sweetalert2@10"></script>
 <script>
     // My web app's Firebase configuration
     var firebaseConfig = {
@@ -37,20 +38,45 @@
         moderate: "Trung bình",
         low: "Thấp",
     }
-
+    var logs = [];
+    var i = 0;
     jQuery(document).ready(function () {
         const dbRef = firebase.database().ref();
 
-        dbRef.child("logs").get().then((snapshot) => {
-            if (snapshot.exists()) {
+        dbRef.child("logs").on('value', (snapshot) => {
+            if (!snapshot.exists()) {
+                console.log("No data available");
+                return;
+            }
+            console.log(snapshot.val());
+            if (i === 0) {
                 for (var key in snapshot.val()) {
+                    logs.push(key);
                     InitializeLog(snapshot.val()[key], key);
                 }
-            } else {
-                console.log("No data available");
+            } else if (i > 0 && (i % 2) === 0) {
+                for (var key in snapshot.val()) {
+                    console.log(logs[key]);
+                    if (logs.find(element => element === key))
+                        continue;
+                    logs.push(key);
+                    InitializeLog(snapshot.val()[key], key);
+                    Swal.fire({
+                        title: 'CẢNH BÁO!!!',
+                        text: 'Có ai đó đang đột nhập vào nhà bạn.',
+                        width: 600,
+                        padding: '3em',
+                        background: '#fff url(https://sweetalert2.github.io/images/trees.png)',
+                        backdrop: `
+                                    rgba(0,0,123,0.4)
+                                    url("https://sweetalert2.github.io/images/nyan-cat.gif")
+                                    left top
+                                    no-repeat
+                                  `
+                    });
+                }
             }
-        }).catch((error) => {
-            console.error(error);
+            i++;
         });
 
     });
@@ -64,7 +90,7 @@
     function InitializeLog(log, snapTimestamp) {
         const currentTimestamp = Math.round(new Date().getTime() / 1000);
 
-        var item = logItemTemplate.clone().appendTo("#logContainer");
+        var item = logItemTemplate.clone().prependTo("#logContainer");
         jQuery(item).find("img").attr("src", log.snapshotUrl);
         jQuery(item).find("#itemDate").html(log.datetime);
 
@@ -113,7 +139,6 @@
             </div>
         </div>
         <!-- End -->
-
         <!-- Image information go here -->
         <div class="row row-cols-1 row-cols-sm-1 row-cols-md-2 row-cols-lg-2 row-cols-xl-4" id="logContainer">
 
@@ -149,7 +174,6 @@
     </div>
 </div>
 <!-- End -->
-
 <!-- Log modal template -->
 <div class="imageModal">
 
