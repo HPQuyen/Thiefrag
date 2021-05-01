@@ -14,11 +14,10 @@
 #include "esp_camera.h"
 #include "soc/soc.h"           // Disable brownour problems
 #include "soc/rtc_cntl_reg.h"  // Disable brownour problems
-
+#include "WiFiManager.h" // https://github.com/tzapu/WiFiManager
 
 /* 1. Define the WiFi credentials */
-#define WIFI_SSID "Sam"
-#define WIFI_PASSWORD "5091Nephilim7031"
+#define AP_SSID "ESP32 AP"
 
 /* 2. Define the Firebase project host name and API Key */
 #define FIREBASE_HOST "thiefrag-65129-default-rtdb.firebaseio.com"
@@ -85,8 +84,6 @@ String GetDateTimeString(unsigned long epochTime);
 
 
 void SetupWifi(){
-  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-  Serial.print("Connecting to Wi-Fi");
   while (WiFi.status() != WL_CONNECTED)
   {
       Serial.print(".");
@@ -138,6 +135,7 @@ void SetupFirebase(){
   {
     //Could not begin stream connection, then print out the error detail
     Serial.println(fbdo.errorReason());
+    ESP.restart();
   }
   Firebase.RTDB.setStreamCallback(&fbdoListener, streamCallback, streamTimeoutCallback);
 }
@@ -182,6 +180,7 @@ void SetupInitCamera(){
   esp_err_t err = esp_camera_init(&camConfig);
   if (err != ESP_OK) {
     Serial.printf("Camera init failed with error 0x%x", err);
+    ESP.restart();
     return;
   }
   sensor_t * s = esp_camera_sensor_get();
@@ -213,6 +212,7 @@ void streamCallback(FirebaseStream data)
 //The library will resume the stream connection automatically
 void streamTimeoutCallback(bool timeout)
 {
+  Serial.println("Stream timeout");
   if(timeout){
     //Stream timeout occurred
     Serial.println("Stream timeout, resume streaming...");
@@ -352,8 +352,20 @@ void setup()
 {
   WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); //disable brownout detector
   Serial.begin(115200);
-  Serial.println();
-  Serial.println();
+
+  WiFi.disconnect(false,true);
+  WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
+  WiFiManager wm;
+  bool res;
+  res = wm.autoConnect(AP_SSID); // anonymous ap
+  if(!res) {
+    Serial.println("Failed to connect");
+    ESP.restart();
+  }
+  //if you get here you have connected to the WiFi    
+  Serial.println("connected...yeey :)");
+  Serial.println(ESP.getFreeHeap());
+  // Setup every thing here
   SetupWifi();
   SetupFirebase();
   SetupInitCamera();

@@ -17,7 +17,7 @@ module.exports = {
         let mailOptions = {
             from: "Thiefrag-SMTP",
             to: user.email,
-            subject: 'Thi?t b? ch?ng tr?m ***C?NH BÁO!!!***',
+            subject: 'Thiefrage Device ***WARNING!!!***',
             text: 'Hi',
             html: {
                 path: process.cwd() + '/views/mail_template.html'
